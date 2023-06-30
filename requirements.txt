@@ -1,6 +1,7 @@
-streamlit
-langchain
+streamlit~=1.24.0
+langchain~=0.0.142
 openai
 chromadb
 tiktoken
 streamlit-chat
+python-decouple
