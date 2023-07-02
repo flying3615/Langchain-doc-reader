@@ -58,8 +58,9 @@ with chat_placeholder.container():
             allow_html=True
         )
 
+if len(st.session_state['generated']) > 0:
     st.button("Clear message", on_click=on_clear_msg_click)
 
-st.text_input("Enter a short question:", placeholder='Please provide a short question.',
+st.text_input("Enter a short question about the doc:", placeholder='Please provide a short question.',
               on_change=on_input_change,
               key="user_input")

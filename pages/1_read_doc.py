@@ -2,12 +2,12 @@ import streamlit as st
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-
 from langchain.chains.summarize import load_summarize_chain
 from langchain.callbacks import get_openai_callback
 from decouple import config
 from langchain.llms import OpenAI
-
+from PyPDF2 import PdfReader
+import pickle
 import os
 
 os.environ["OPENAI_API_KEY"] = config('OPENAI_API_KEY')
@@ -21,23 +21,29 @@ st.session_state.setdefault('output_summary', "")
 st.session_state.setdefault('token_count', "")
 
 
+# https://github.com/farukalampro/Langchain-PDF-App-using-ChatGPT/blob/main/main.py
+
 def on_file_upload():
     if uploaded_file is not None:
-        documents = [uploaded_file.read().decode()]
+        with st.spinner('Uploading...'):
+            pdf_reader = PdfReader(uploaded_file)
+            text = []
+            for page in pdf_reader.pages:
+                text.append(page.extract_text())
 
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 
-        docs = text_splitter.create_documents(documents)
-        # Select embeddings
-        embeddings = OpenAIEmbeddings()
-        # Create a vectorstore from documents
-        db = Chroma.from_documents(docs, embeddings)
-        # Create retriever
-        st.session_state.retriever = db.as_retriever()
+            docs = text_splitter.create_documents(text)
+            # Select embeddings
+            embeddings = OpenAIEmbeddings()
+            # Create a vectorstore from documents
+            db = Chroma.from_documents(docs, embeddings)
+            # Create retriever
+            st.session_state.retriever = db.as_retriever()
 
-        chain = load_summarize_chain(llm, chain_type="map_reduce")
+            chain = load_summarize_chain(llm, chain_type="map_reduce")
 
-        st.session_state.output_summary = count_tokens_run(chain, docs)
+            st.session_state.output_summary = count_tokens_run(chain, docs)
     else:
         return None
 
@@ -50,7 +56,7 @@ def count_tokens_run(chain, query):
 
 
 # File upload
-uploaded_file = st.file_uploader('Upload an article', type='txt')
+uploaded_file = st.file_uploader("Upload your PDF", type='pdf')
 on_file_upload()
 
 if st.session_state.output_summary != "":
