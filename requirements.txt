@@ -7,4 +7,3 @@ streamlit-chat
 python-decouple
 PyPDF2
 streamlit_extras
-playwright

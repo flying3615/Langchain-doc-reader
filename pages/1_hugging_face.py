@@ -1,16 +1,12 @@
 import streamlit as st
 from decouple import config
 from langchain import PromptTemplate, LLMChain
-
+from langchain import HuggingFaceHub
 import os
 
 os.environ['HUGGINGFACEHUB_API_TOKEN'] = config('HF_API_KEY')
 
-
 st.markdown("# Ask question to google/flan-t5-xxl🎉")
-
-
-from langchain import HuggingFaceHub
 
 repo_id = "google/flan-t5-xxl"
 
