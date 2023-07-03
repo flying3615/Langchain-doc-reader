@@ -17,7 +17,7 @@ from langchain.chains.question_answering import load_qa_chain
 from PyPDF2 import PdfReader
 from util import count_tokens_run
 
-st.markdown("# Ask question about a page")
+st.markdown("# Chat with a PDF or Web Page")
 
 os.environ["OPENAI_API_KEY"] = config('OPENAI_API_KEY')
 st.session_state.setdefault('past', [])
@@ -63,22 +63,17 @@ def summarize_text(text):
 
 
 @st.cache_data
-def on_file_upload():
+def extract_file_content():
     pdf_reader = PdfReader(uploaded_file)
     text = []
     for page in pdf_reader.pages:
         text.append(page.extract_text())
 
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-
     docs = text_splitter.create_documents(text)
     embeddings = OpenAIEmbeddings()
-    # Create a vectorstore from documents
-    # Create retriever
     st.session_state.retriever = Chroma.from_documents(docs, embeddings)
-
     chain = load_summarize_chain(llm, chain_type="map_reduce")
-
     return count_tokens_run(chain, docs)
 
 
@@ -89,7 +84,7 @@ genre = st.radio(
 if genre == 'Doc':
     uploaded_file = st.file_uploader("Upload your PDF", type='pdf')
     if uploaded_file is not None:
-        st.write(on_file_upload())
+        st.write(extract_file_content())
 else:
     query = st.text_input("Input url :")
     if query:
